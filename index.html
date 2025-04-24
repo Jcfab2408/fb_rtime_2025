@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Realtime Data Firebase Databases</title>
+    <style>
+        .container{
+            max-width: 800px;
+            font-family: sans-serif;
+            margin: auto;
+        }
+        h1{
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        table{
+            width: 100%;
+            border-spacing: 0px;
+        }
+        th{
+            text-align: left;
+        }
+        table td:focus{
+            background-color: #eae9e9;
+        }
+        td:nth-child(3){
+            width: 400px;
+        }
+        td:last-child{
+            text-align: right;
+        }
+        table th,
+        table td{
+            width: 140px;
+            padding: 5px 0px;
+            border-bottom: 1px solid #cacaca;
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <center>
+        <h3>Realtime DB Reading From Firebase Database</h3>
+        
+        <table>
+            <thead style="background-color:rgb(250, 150, 70);">
+                <tr>
+                    <th>Nombre</th>
+                    <th style="text-align:center;">Edad</th>
+                    <th>Url</th>
+                    <th style="text-align:center;">Image</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+        <br>
+        <video id="myVideo" width="480px;" controls>
+            <source src="movie.mp4" type="video/mp4">
+        </video>
+        <br>
+    </center>
+    </div>
+<!-- add firebase CDN -->
+<script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-database-compat.js"></script>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyDTOgQlPs-byDnyiHpTeL1zcgcHIxeOJe8",
+        databaseURL: "https://app-jcfab.firebaseio.com"
+    }
+    firebase.initializeApp(firebaseConfig)
+    // here connection is created with database
+    const database = firebase.database()
+
+    const dataContainer = document.querySelector('tbody')
+
+    // give complete path to fetch data as given during sending
+    var fetchedData = database.ref('Personas/')
+    fetchedData.on('value', (snapshot) => {
+        var data = snapshot.val()
+        // now set data in table
+        var htmlData = ''
+        for(var key in data){
+            var value = data[key]
+            htmlData += `
+                <tr>
+                    <td>${value.nombre}</td>
+                    <td style="width:70px;text-align:center;">${value.edad}</td>
+                    <td style="width:100px;">${value.urlimg.substring(0,40)}</td>
+                    <td style="width:70px;text-align:center;"><img src="${value.urlimg}" height="60px;" ></td>
+                    <td style="text-align:center;">
+                        <button onclick="viewFull('${value.urlimg}')">Full Img</button>
+                        <br>
+                        <button onclick="videoPlay('${value.video}')">Video</button>
+                    </td>
+                </tr>
+            `;
+        }
+        // we use unique id's as reference to delete and update data
+        dataContainer.innerHTML = htmlData
+    })
+
+    // ViewFull Image
+    function viewFull(myUrl){
+        var myWindow = window.open(myUrl, "");
+    }
+
+    // remove message function
+    function videoPlay(videoUrl){
+        // VideoPlay url
+        if (videoUrl.length > 20){
+            document.getElementById("myVideo").src=videoUrl;
+            var vid = document.getElementById("myVideo");            
+            vid.autoplay = true;
+            vid.load();
+        }else{
+            alert ("Aun no Creado!");
+        }
+        
+    }
+
+    // update function 
+    function readyForUpdate(uniqueId, elem){
+        // lets ready for update
+        // it will get all the td of the tr in which btn in clicked
+        var siblingTd = elem.parentElement.parentElement.getElementsByTagName('td')
+        // convert first three td to editable
+        for(var i = 0; i < siblingTd.length-1; i++){
+            siblingTd[i].contentEditable = true
+            siblingTd[i].classList.add('temp-update-class')
+        }
+        // also change onclick function
+        elem.setAttribute('onclick', `updateNow('${uniqueId}')`)
+        elem.innerHTML = 'Send'
+    }
+
+    // create updateNow function
+    function updateNow(uniqueId){
+        var contentId = document.querySelectorAll('.temp-update-class')
+        // now create obj using same keys as used during sending
+        var obj = {
+            'edad': parseInt(contentId[1].textContent),
+            'nombre': contentId[0].textContent,            
+            'urlimg': contentId[2].textContent
+        }
+        // create reference to the data first where data will update
+        // uniqueId will be the id of each message in db
+        var listRef = database.ref('Personas/' + uniqueId)        
+        // now provide updated data
+        listRef.update(obj)
+        // after update new data will rerender automatically
+        // same as during delete
+    }
+
+</script>
+</body>
+</html>
