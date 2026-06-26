@@ -45,9 +45,10 @@
         <center>
         <h3>Realtime DB Reading From Firebase Database</h3>
         
-        <table>
+        <table border="1">
             <thead style="background-color:rgb(250, 150, 70);">
                 <tr>
+                    <th style="text-align:center;">Id #</th>
                     <th>Nombre</th>
                     <th style="text-align:center;">Edad</th>
                     <th>Url</th>
@@ -59,9 +60,15 @@
             </tbody>
         </table>
         <br>
-        <video id="myVideo" width="480px;" controls>
-            <source src="movie.mp4" type="video/mp4">
-        </video>
+        <input type="text" id="myName" placeholder="Nombre.." style="font-size: 24px; font-weight: bold; text-align: center;"><br>
+        <br>
+        <iframe id="myVideo"
+        src="https://drive.google.com/file/d/1T-xUKMRFph-cKZ131DTUESyQ6DnXStMG/preview"
+        width="400"
+        height="700"
+        frameborder="0"
+        allow="autoplay">
+        </iframe>
         <br>
     </center>
     </div>
@@ -70,6 +77,8 @@
 <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-database-compat.js"></script>
 
 <script>
+    // Email: jcfc.sistemas@gmail.com
+    // Storage: Google Drive
     const firebaseConfig = {
         apiKey: "AIzaSyDTOgQlPs-byDnyiHpTeL1zcgcHIxeOJe8",
         databaseURL: "https://app-jcfab.firebaseio.com"
@@ -90,14 +99,15 @@
             var value = data[key]
             htmlData += `
                 <tr>
-                    <td>${value.nombre}</td>
+                    <td style="text-align:center;">${key}</td>
+                    <td style="font-weight:bold;">${value.nombre}</td>
                     <td style="width:70px;text-align:center;">${value.edad}</td>
                     <td style="width:100px;">${value.urlimg.substring(0,40)}</td>
                     <td style="width:70px;text-align:center;"><img src="${value.urlimg}" height="60px;" ></td>
                     <td style="text-align:center;">
                         <button onclick="viewFull('${value.urlimg}')">Full Img</button>
                         <br>
-                        <button onclick="videoPlay('${value.video}')">Video</button>
+                        <button onclick="videoPlay('${value.nombre}','${value.video}')">Video</button>
                     </td>
                 </tr>
             `;
@@ -112,11 +122,13 @@
     }
 
     // remove message function
-    function videoPlay(videoUrl){
+    function videoPlay(nombre, videoUrl){
         // VideoPlay url
         if (videoUrl.length > 20){
             document.getElementById("myVideo").src=videoUrl;
-            var vid = document.getElementById("myVideo");            
+            var nom = document.getElementById("myName");
+            var vid = document.getElementById("myVideo");
+            nom.value = nombre;
             vid.autoplay = true;
             vid.load();
         }else{
